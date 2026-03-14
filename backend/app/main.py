@@ -19,7 +19,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://cleaning-system-zeta.vercel.app/login"],
+    allow_origins=["http://localhost:5173", "https://cleaning-system-zeta.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
