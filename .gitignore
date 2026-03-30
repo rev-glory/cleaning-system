@@ -15,8 +15,8 @@ backend/.env
 frontend/.env
 
 # ML model weights — too large for git
-backend/*.pt
 backend/runs/
+backend/yolov8n.pt
 
 # Node
 frontend/node_modules/
