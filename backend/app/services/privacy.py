@@ -2,9 +2,8 @@ import torch
 import cv2
 import numpy as np
 from PIL import Image
-from ultralytics import YOLO
 
-_shared_model = YOLO("yolov8n-seg.pt")
+from app.services.models import shared_model
 
 def pil_to_cv2(image: Image.Image) -> np.ndarray:
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
@@ -16,7 +15,7 @@ def remove_humans(image: Image.Image) -> tuple[Image.Image, bool]:
     cv_image = pil_to_cv2(image)
     humans_detected = False
     try:
-        results = _privacy_model(cv_image, classes=[0], verbose=False)
+        results = shared_model(cv_image, classes=[0], verbose=False)
         for result in results:
             for box in result.boxes:
                 humans_detected = True

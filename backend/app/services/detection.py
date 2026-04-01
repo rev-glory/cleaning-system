@@ -1,11 +1,10 @@
-from ultralytics import YOLO
+
 from PIL import Image
 import numpy as np
 import cv2
 from sklearn.cluster import DBSCAN
 
-# 1. Switched to Segmentation Model
-_shared_model = YOLO("yolov8n-seg.pt")
+from app.services.models import shared_model
 
 IGNORE_CLASSES = {
     "person", "chair", "couch", "bed", "dining table",
@@ -135,7 +134,7 @@ def run_detection(image: Image.Image) -> list[dict]:
         img_area = img_h * img_w
         cv_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
 
-        results = _detection_model(cv_image, verbose=False)
+        results = shared_model(cv_image, verbose=False)
         
         # Canvas to track visible floor (255 = floor, 0 = furniture)
         valid_floor_mask = np.ones((img_h, img_w), dtype=np.uint8) * 255

@@ -1,17 +1,17 @@
 import torch
+import gc
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from app.database import get_db
 from app.routes.auth import get_current_user
 from app.services.privacy import remove_humans, scrub_faces
 from app.services.detection import run_detection, draw_zone_map
 from app.services.scoring import compute_score, build_schedule
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from PIL import Image
 import cloudinary
 import cloudinary.uploader
 import io
-import os
 from app.config import settings
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
@@ -98,18 +98,12 @@ async def analyze_image(
         "zone_map_url": zone_map_url,
         "detections": detections,
         "schedule": schedule,
-        "analyzed_at": datetime.utcnow()
+        "analyzed_at": datetime.now(timezone.utc)
     }
 
     result = await db.analyses.insert_one(doc)
 
-    del detections
-    del zone_map
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-
-    return {
+    response_data = {
         "id": str(result.inserted_id),
         "zone_id": zone_id,
         "zone_name": zone["name"],
@@ -122,6 +116,12 @@ async def analyze_image(
         "schedule": schedule,
         "analyzed_at": doc["analyzed_at"]
     }
+
+    del detections
+    del zone_map
+    gc.collect()
+
+    return response_data
 
 
 @router.get("/history/{zone_id}")

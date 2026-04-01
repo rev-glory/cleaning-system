@@ -24,15 +24,15 @@ export default function Schedule() {
         z.data.map(zone => api.get(`/analyze/history/${zone.id}`))
       )
       
-      // FIX 1: Sort globally by date
+      // Sort globally by date descending
       const flat = all.flatMap((r, i) =>
         r.data.map(a => ({ ...a, zone_name: z.data[i].name }))
       ).sort((a, b) => new Date(b.analyzed_at) - new Date(a.analyzed_at))
 
-      // FIX 2: Sort pending items by priority urgency, not status
+      // FIX: Sort by schedule_priority using the priorityOrder map
       const pending = flat
         .filter(a => a.schedule_status === 'pending')
-        .sort((a, b) => (priorityOrder[a.schedule_priority] ?? 3) - (priorityOrder[b.schedule_priority] ?? 3))
+        .sort((a, b) => (priorityOrder[a.schedule_priority] ?? 3) - (priorityOrder[b.schedule_priority] ?? 3));
         
       setAnalyses(pending)
       setCompleted(flat.filter(a => a.schedule_status === 'completed').slice(0, 20))
@@ -106,10 +106,16 @@ export default function Schedule() {
                         Scanned {new Date(a.analyzed_at).toLocaleString()}
                       </p>
                     </div>
-                    {/* FIX 3: Use schedule_priority for color mapping and text display */}
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${priorityColor[a.schedule_priority] || 'bg-gray-100 text-gray-600'}`}>
-                      {a.schedule_priority || 'Routine'}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${priorityColor[a.schedule_priority] || 'bg-gray-100 text-gray-600'}`}>
+                        {a.schedule_priority || 'routine'}
+                      </span>
+                      {a.suggested_window && (
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${new Date(a.suggested_window) < new Date() ? 'text-red-600' : 'text-gray-500'}`}>
+                          Due {timeUntil(a.suggested_window)}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 mb-3">

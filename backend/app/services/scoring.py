@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 def compute_score(detections: list[dict]) -> tuple[int, str]:
     if not detections:
@@ -49,7 +49,10 @@ def compute_score(detections: list[dict]) -> tuple[int, str]:
 
 
 def build_schedule(score: int, severity: str) -> dict:
-    now = datetime.utcnow()
+    # Logic change: Only schedule if score is below threshold
+    if score >= threshold:
+        return None
+    now = datetime.now(timezone.utc)
     if severity == "critical":
         window = now + timedelta(minutes=30)
         duration = 30
