@@ -1,3 +1,4 @@
+import torch
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from app.database import get_db
 from app.routes.auth import get_current_user
@@ -102,6 +103,12 @@ async def analyze_image(
 
     result = await db.analyses.insert_one(doc)
 
+    del detections
+    del zone_map
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     return {
         "id": str(result.inserted_id),
         "zone_id": zone_id,
@@ -136,6 +143,7 @@ async def get_zone_history(
             # Use .get() chaining to prevent errors if schedule is null
             "schedule_status": a.get("schedule", {}).get("status") if a.get("schedule") else None,
             "schedule_priority": a.get("schedule", {}).get("priority") if a.get("schedule") else None,
+            "suggested_window": a.get("schedule", {}).get("suggested_window") if a.get("schedule") else None,
             "zone_map_url": a.get("zone_map_url"),
             "analyzed_at": a["analyzed_at"]
         }

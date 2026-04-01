@@ -5,8 +5,7 @@ import cv2
 from sklearn.cluster import DBSCAN
 
 # 1. Switched to Segmentation Model
-_detection_model = YOLO("yolov8s-seg.pt")
-_privacy_model = YOLO("yolov8n.pt")
+_shared_model = YOLO("yolov8n-seg.pt")
 
 IGNORE_CLASSES = {
     "person", "chair", "couch", "bed", "dining table",
