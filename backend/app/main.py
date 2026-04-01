@@ -1,3 +1,10 @@
+import torch
+# Safety allowlist for YOLO models in PyTorch 2.6+
+torch.serialization.add_safe_globals([
+    "ultralytics.nn.tasks.DetectionModel", 
+    "ultralytics.nn.tasks.SegmentationModel"
+])
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
