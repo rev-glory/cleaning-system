@@ -68,7 +68,7 @@ export default function Dashboard() {
     load()
   }, [])
 
-  const pending = analyses.filter(a => a.schedule_status === 'pending').length
+  const pending = analyses.filter(a => a.schedule_status && a.schedule_status === 'pending').length
   const avgScore = analyses.length
     ? Math.round(analyses.reduce((s, a) => s + a.cleanliness_score, 0) / analyses.length)
     : 0

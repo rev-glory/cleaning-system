@@ -117,8 +117,6 @@ async def analyze_image(
         "analyzed_at": doc["analyzed_at"]
     }
 
-    del detections
-    del zone_map
     gc.collect()
 
     return response_data

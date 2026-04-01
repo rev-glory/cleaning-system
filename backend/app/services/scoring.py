@@ -48,11 +48,18 @@ def compute_score(detections: list[dict]) -> tuple[int, str]:
     return score, severity
 
 
-def build_schedule(score: int, severity: str) -> dict:
-    # Logic change: Only schedule if score is below threshold
+def build_schedule(score: int, severity: str, threshold: int = 75) -> dict | None:
+    """
+    Returns a schedule only if the cleanliness score is below the threshold.
+    Default threshold is 75.
+    """
+    # FIX: threshold is now defined in the function signature above
     if score >= threshold:
         return None
+
+    # Use UTC time for consistency
     now = datetime.now(timezone.utc)
+    
     if severity == "critical":
         window = now + timedelta(minutes=30)
         duration = 30
@@ -69,10 +76,11 @@ def build_schedule(score: int, severity: str) -> dict:
         priority = "medium"
         notes = "Moderate floor clutter. Schedule cleaning soon."
     else:
+        # For scores < 75 but severity "low"
         window = now + timedelta(hours=8)
         duration = 10
         priority = "low"
-        notes = "Space is mostly clear. Routine cleaning sufficient."
+        notes = "Minor clutter detected. Routine cleaning scheduled."
 
     return {
         "priority": priority,
