@@ -133,7 +133,9 @@ async def get_zone_history(
             "cleanliness_score": a["cleanliness_score"],
             "severity": a["severity"],
             "detections_count": len(a.get("detections", [])),
-            "schedule_status": a["schedule"]["status"],
+            # Use .get() chaining to prevent errors if schedule is null
+            "schedule_status": a.get("schedule", {}).get("status") if a.get("schedule") else None,
+            "schedule_priority": a.get("schedule", {}).get("priority") if a.get("schedule") else None,
             "zone_map_url": a.get("zone_map_url"),
             "analyzed_at": a["analyzed_at"]
         }

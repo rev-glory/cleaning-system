@@ -40,7 +40,9 @@ export default function Dashboard() {
         const all = await Promise.all(
           z.data.map(zone => api.get(`/analyze/history/${zone.id}`))
         )
-        const flat = all.flatMap(r => r.data)
+        const flat = all.flatMap(r => r.data).sort((a, b) => 
+          new Date(b.analyzed_at) - new Date(a.analyzed_at)
+        )
         setAnalyses(flat)
 
         // Compute latest score per zone

@@ -23,12 +23,17 @@ export default function Schedule() {
       const all = await Promise.all(
         z.data.map(zone => api.get(`/analyze/history/${zone.id}`))
       )
+      
+      // FIX 1: Sort globally by date
       const flat = all.flatMap((r, i) =>
         r.data.map(a => ({ ...a, zone_name: z.data[i].name }))
-      )
+      ).sort((a, b) => new Date(b.analyzed_at) - new Date(a.analyzed_at))
+
+      // FIX 2: Sort pending items by priority urgency, not status
       const pending = flat
         .filter(a => a.schedule_status === 'pending')
-        .sort((a, b) => (priorityOrder[a.schedule_status] || 3) - (priorityOrder[b.schedule_status] || 3))
+        .sort((a, b) => (priorityOrder[a.schedule_priority] ?? 3) - (priorityOrder[b.schedule_priority] ?? 3))
+        
       setAnalyses(pending)
       setCompleted(flat.filter(a => a.schedule_status === 'completed').slice(0, 20))
     } catch (e) {
@@ -101,8 +106,9 @@ export default function Schedule() {
                         Scanned {new Date(a.analyzed_at).toLocaleString()}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${priorityColor[a.schedule_status] || 'bg-gray-100 text-gray-600'}`}>
-                      pending
+                    {/* FIX 3: Use schedule_priority for color mapping and text display */}
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${priorityColor[a.schedule_priority] || 'bg-gray-100 text-gray-600'}`}>
+                      {a.schedule_priority || 'Routine'}
                     </span>
                   </div>
 
