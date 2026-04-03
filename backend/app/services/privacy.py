@@ -1,18 +1,8 @@
-import torch
 import cv2
 import numpy as np
-from PIL import Image
-
 from app.services.models import shared_model
 
-def pil_to_cv2(image: Image.Image) -> np.ndarray:
-    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-
-def cv2_to_pil(image: np.ndarray) -> Image.Image:
-    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-
-def remove_humans(image: Image.Image) -> tuple[Image.Image, bool]:
-    cv_image = pil_to_cv2(image)
+def remove_humans(cv_image: np.ndarray) -> tuple[np.ndarray, bool]:
     humans_detected = False
     try:
         results = shared_model(cv_image, classes=[0], verbose=False)
@@ -21,14 +11,14 @@ def remove_humans(image: Image.Image) -> tuple[Image.Image, bool]:
                 humans_detected = True
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 roi = cv_image[y1:y2, x1:x2]
-                blurred = cv2.GaussianBlur(roi, (99, 99), 30)
-                cv_image[y1:y2, x1:x2] = blurred
+                if roi.size > 0:
+                    blurred = cv2.GaussianBlur(roi, (99, 99), 30)
+                    cv_image[y1:y2, x1:x2] = blurred
     except Exception as e:
         print(f"Privacy processing warning: {e}")
-    return cv2_to_pil(cv_image), humans_detected
+    return cv_image, humans_detected
 
-def scrub_faces(image: Image.Image) -> Image.Image:
-    cv_image = pil_to_cv2(image)
+def scrub_faces(cv_image: np.ndarray) -> np.ndarray:
     try:
         face_cascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
@@ -42,4 +32,4 @@ def scrub_faces(image: Image.Image) -> Image.Image:
                 cv_image[y:y+h, x:x+w] = blurred
     except Exception as e:
         print(f"Face scrub warning: {e}")
-    return cv2_to_pil(cv_image)
+    return cv_image
